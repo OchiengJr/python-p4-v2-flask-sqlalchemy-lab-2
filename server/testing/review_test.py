@@ -1,33 +1,35 @@
 from app import app, db
 from server.models import Customer, Item, Review
 
-
 class TestReview:
-    '''Review model in models.py'''
+    """Test cases for Review model in models.py"""
 
     def test_can_be_instantiated(self):
-        '''can be invoked to create a Python object.'''
+        """Test instantiation of Review model."""
         r = Review()
         assert r
         assert isinstance(r, Review)
 
     def test_has_comment(self):
-        '''can be instantiated with a comment attribute.'''
-        r = Review(comment='great product!')
-        assert r.comment == 'great product!'
+        """Test Review instantiation with a comment attribute."""
+        comment_text = 'great product!'
+        r = Review(comment=comment_text)
+        assert r.comment == comment_text
 
     def test_can_be_saved_to_database(self):
-        '''can be added to a transaction and committed to review table with comment column.'''
+        """Test saving Review to database."""
         with app.app_context():
             assert 'comment' in Review.__table__.columns
+
             r = Review(comment='great!')
             db.session.add(r)
             db.session.commit()
-            assert hasattr(r, 'id')
-            assert db.session.query(Review).filter_by(id=r.id).first()
+
+            assert r.id is not None
+            assert db.session.query(Review).filter_by(id=r.id).first() is not None
 
     def test_is_related_to_customer_and_item(self):
-        '''has foreign keys and relationships'''
+        """Test relationships and foreign keys with Customer and Item."""
         with app.app_context():
             assert 'customer_id' in Review.__table__.columns
             assert 'item_id' in Review.__table__.columns
@@ -41,10 +43,11 @@ class TestReview:
             db.session.add(r)
             db.session.commit()
 
-            # check foreign keys
+            # Check foreign keys
             assert r.customer_id == c.id
             assert r.item_id == i.id
-            # check relationships
+
+            # Check relationships
             assert r.customer == c
             assert r.item == i
             assert r in c.reviews
